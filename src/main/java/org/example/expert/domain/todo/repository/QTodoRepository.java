@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface QTodoRepository {
 
-    Optional<Todo> findByIdWithUser(long id);
+    Optional<Todo> findByIdWithUser(Long id);
 }

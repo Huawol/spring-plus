@@ -18,7 +18,7 @@ public class QTodoRepositoryImpl implements QTodoRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<Todo> findByIdWithUser(long id) {
+    public Optional<Todo> findByIdWithUser(Long id) {
         return Optional.ofNullable(
                 queryFactory.selectFrom(todo)
                 .leftJoin(todo.user, user).fetchJoin()
