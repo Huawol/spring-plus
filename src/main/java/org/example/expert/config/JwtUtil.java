@@ -34,7 +34,7 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(Long userId, String email, String nickname,UserRole userRole) {
+    public String createToken(Long userId, String email, String nickname, UserRole userRole) {
         Date date = new Date();
 
         return BEARER_PREFIX +
@@ -62,5 +62,21 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public Long getUserId(String token) {
+        return Long.parseLong(extractClaims(token).getSubject());
+    }
+
+    public String getEmail(String token) {
+        return extractClaims(token).get("email", String.class);
+    }
+
+    public String getNickName(String token) {
+        return extractClaims(token).get("nickname", String.class);
+    }
+
+    public UserRole getUserRole(String token) {
+        return UserRole.of(extractClaims(token).get("userRole", String.class));
     }
 }
