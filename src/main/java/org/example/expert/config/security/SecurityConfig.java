@@ -4,6 +4,7 @@ package org.example.expert.config.security;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.config.JwtFilter;
 import org.example.expert.config.JwtUtil;
+import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.enums.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +43,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/signup").permitAll()
                         .requestMatchers("/auth/signin").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/todos").hasRole(UserRole.USER.name())
-                        .requestMatchers(HttpMethod.GET, "/todos").hasRole(UserRole.USER.name())
-                        .requestMatchers(HttpMethod.GET, "/todos/**").hasRole(UserRole.USER.name())
+                        .requestMatchers("/todos").hasAnyRole(UserRole.USER.name(), UserRole.ADMIN.name()) // 유저랑 어드민 둘다 허용
+                        .requestMatchers("/todos/**").hasAnyRole(UserRole.USER.name(), UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.PATCH, "/admin/users/").hasRole(UserRole.ADMIN.name())
                         .anyRequest().denyAll()
                 )

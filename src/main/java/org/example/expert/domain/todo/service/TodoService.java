@@ -7,6 +7,7 @@ import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
+import org.example.expert.domain.todo.dto.response.TodoSummaryResponseDto;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
@@ -17,7 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +67,7 @@ public class TodoService {
         ));
     }
 
+    // 쿼리dsl 사용
     public TodoResponse getTodo(long todoId) {
         Todo todo = todoRepository.findByIdWithUser(todoId)
                 .orElseThrow(() -> new InvalidRequestException("Todo not found"));
@@ -83,15 +85,15 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> searchTodo(int page, int size, String weather, LocalDateTime startDate, LocalDateTime endDate) {
+    public Page<TodoResponse> searchTodo(int page, int size, String weather, LocalDate startDate, LocalDate endDate) {
         Pageable pageable = PageRequest.of(page - 1, size);
         if (startDate == null) {
-            startDate = LocalDateTime.of(1, 1, 1,0, 0);
+            startDate = LocalDate.of(1, 1, 1);
         }
         if (endDate == null) {
-            endDate = LocalDateTime.of(9999, 12, 31, 23, 59);
+            endDate = LocalDate.of(9999, 12, 31);
         }
-        Page<Todo> todos = todoRepository.findAllByWeatherAndDateRange(weather,startDate,endDate, pageable);
+        Page<TodoResponse> todos = todoRepository.findAllByWeatherAndDateRange(weather, startDate, endDate, pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(), todo.getTitle(), todo.getContents(), todo.getWeather(),
@@ -101,4 +103,22 @@ public class TodoService {
         ));
     }
 
+    public Page<TodoResponse> searchTitle(String keyword, Pageable pageable) {
+        Page<TodoResponse> todos = todoRepository.findByTitle(keyword, pageable);
+        return todos.map(
+                todoResponse -> new TodoResponse(
+                        todoResponse.getId(),
+                        todoResponse.getTitle(),
+                        todoResponse.getContents(),
+                        todoResponse.getWeather(),
+                        new UserResponse(todoResponse.getId(), todoResponse.getUser().getEmail(), todoResponse.getUser().getNickname()),
+                        todoResponse.getCreatedAt(),
+                        todoResponse.getModifiedAt()
+                )
+        );
+    }
+
+    public Page<TodoSummaryResponseDto> findTodoSummary(Pageable pageable) {
+        return todoRepository.findTodoSummary(pageable);
+    }
 }

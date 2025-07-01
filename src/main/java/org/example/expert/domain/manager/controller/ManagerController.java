@@ -8,6 +8,8 @@ import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
 import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
 import org.example.expert.domain.manager.service.ManagerService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +43,13 @@ public class ManagerController {
             @PathVariable long managerId
     ) {
         managerService.deleteManager(authUser, todoId, managerId);
+    }
+
+    @GetMapping("/todos/managers")
+    public Page<ManagerResponse> findManager(
+            @RequestParam String nickname,
+            Pageable pageable
+    ) {
+        return managerService.findManger(nickname, pageable);
     }
 }

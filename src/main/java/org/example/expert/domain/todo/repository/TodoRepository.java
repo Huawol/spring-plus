@@ -5,10 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long>, QTodoRepository {
 
@@ -16,19 +12,4 @@ public interface TodoRepository extends JpaRepository<Todo, Long>, QTodoReposito
     Page<Todo> findAllByOrderByModifiedAtDesc(Pageable pageable);
 
 
-
-    @Query(
-            "SELECT t FROM Todo t " +
-                    " JOIN FETCH t.user " +
-                    " WHERE (:weather IS NULL OR t.weather = :weather)" +
-                    "AND (: startDate IS NULL OR t.modifiedAt >= :startDate)" +
-                    "AND (: endDate IS NULL OR t.modifiedAt <= :endDate)" +
-                    "ORDER BY t.modifiedAt DESC"
-    )
-    Page<Todo> findAllByWeatherAndDateRange(
-            @Param("weather") String weather,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            Pageable pageable
-    );
 }

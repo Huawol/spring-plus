@@ -13,6 +13,8 @@ import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -92,5 +94,19 @@ public class ManagerService {
         }
 
         managerRepository.delete(manager);
+    }
+
+    public Page<ManagerResponse> findManger(String nickname, Pageable pageable) {
+        Page<ManagerResponse> manager = managerRepository.findManager(nickname, pageable);
+        return manager.map(
+                managerResponse -> new ManagerResponse(
+                        managerResponse.getId(),
+                        new UserResponse(
+                                managerResponse.getId(),
+                                managerResponse.getUser().getEmail(),
+                                managerResponse.getUser().getNickname()
+                        )
+                )
+        );
     }
 }
