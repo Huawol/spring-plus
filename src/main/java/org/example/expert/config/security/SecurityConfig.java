@@ -4,7 +4,6 @@ package org.example.expert.config.security;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.config.JwtFilter;
 import org.example.expert.config.JwtUtil;
-import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.enums.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
