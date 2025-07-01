@@ -16,8 +16,8 @@ public class LogService {
     private final LogRepository logRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveLog(String userId, LocalDateTime requestTime, String requestUrl, String method) {
-        Log log = new Log(userId, requestTime, requestUrl, method);
+    public void saveLog(String nickname, LocalDateTime requestTime, String requestUrl, String method) {
+        Log log = new Log(nickname, requestTime, requestUrl, method);
         logRepository.save(log);
     }
 }
