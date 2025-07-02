@@ -7,13 +7,15 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
-import org.example.expert.domain.todo.dto.response.TodoSummaryResponseDto;
+import org.example.expert.domain.todo.dto.response.TodoSearchCondition;
+import org.example.expert.domain.todo.dto.response.TodoSearchDto;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,41 +39,6 @@ public class QTodoRepositoryImpl implements QTodoRepository {
                         .leftJoin(todo.user, user).fetchJoin()
                         .where(todo.id.eq(id))
                         .fetchOne());
-    }
-
-    @Override
-    public Page<TodoResponse> findByTitle(String keyword, Pageable pageable) {
-
-        List<Todo> content = queryFactory
-                .selectFrom(todo)
-                .where(todo.title.containsIgnoreCase(keyword))
-                .orderBy(todo.modifiedAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        Long total = queryFactory
-                .select(todo.count())
-                .from(todo)
-                .where(todo.title.containsIgnoreCase(keyword))
-                .fetchOne();
-
-        List<TodoResponse> dtoList = content.stream()
-                .map(t -> new TodoResponse(
-                        t.getId(),
-                        t.getTitle(),
-                        t.getContents(),
-                        t.getWeather(),
-                        new UserResponse(
-                                t.getUser().getId(),
-                                t.getUser().getEmail(),
-                                t.getUser().getNickname()
-                        ),
-                        t.getCreatedAt(),
-                        t.getModifiedAt()
-                )).toList();
-
-        return new PageImpl<>(dtoList, pageable, total != null ? total : 0);
     }
 
     @Override
@@ -122,12 +89,28 @@ public class QTodoRepositoryImpl implements QTodoRepository {
     }
 
     @Override
-    public Page<TodoSummaryResponseDto> findTodoSummary(Pageable pageable) {
+    public Page<TodoSearchDto> searchTodos(TodoSearchCondition condition, Pageable pageable) {
+        BooleanBuilder builder = new BooleanBuilder();
 
-        List<TodoSummaryResponseDto> content = queryFactory
+        if (StringUtils.hasText(condition.getTitle())) {
+            builder.and(todo.title.containsIgnoreCase(condition.getTitle()));
+        }
+
+        if (StringUtils.hasText(condition.getNickname())) {
+            builder.and(todo.managers.any().user.nickname.containsIgnoreCase(condition.getNickname()));
+        }
+
+        // 생성일 범위 검색 (createdAt 기준)
+        if (condition.getStartDate() != null) {
+            builder.and(todo.createdAt.goe(condition.getStartDate().atStartOfDay()));
+        }
+        if (condition.getEndDate() != null) {
+            builder.and(todo.createdAt.loe(condition.getEndDate().atTime(23, 59, 59)));
+        }
+
+        List<TodoSearchDto> content = queryFactory
                 .select(Projections.constructor(
-                        TodoSummaryResponseDto.class,
-                        todo.id,
+                        TodoSearchDto.class,
                         todo.title,
                         manager.countDistinct(),
                         JPAExpressions.select(comment.count())
@@ -135,16 +118,19 @@ public class QTodoRepositoryImpl implements QTodoRepository {
                                 .where(comment.todo.id.eq(todo.id))
                 ))
                 .from(todo)
-                .leftJoin(manager).on(manager.todo.id.eq(todo.id))
+                .leftJoin(todo.managers, manager)
+                .where(builder)
                 .groupBy(todo.id, todo.title)
-                .orderBy(todo.id.desc())
+                .orderBy(todo.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        // 전체 개수 (for 페이징)
         Long total = queryFactory
                 .select(todo.count())
                 .from(todo)
+                .where(builder)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);

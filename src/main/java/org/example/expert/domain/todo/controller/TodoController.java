@@ -4,9 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
-import org.example.expert.domain.todo.dto.response.TodoResponse;
-import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
-import org.example.expert.domain.todo.dto.response.TodoSummaryResponseDto;
+import org.example.expert.domain.todo.dto.response.*;
 import org.example.expert.domain.todo.service.TodoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,17 +53,12 @@ public class TodoController {
         return todoService.searchTodo(page, size, weather, startDate, endDate);
     }
 
-    @GetMapping("/todos/title")
-    public Page<TodoResponse> searchTitle(
-            @RequestParam String keyword,
+
+    @GetMapping("/todos/search2")
+    public Page<TodoSearchDto> searchTodos(
+            @ModelAttribute TodoSearchCondition condition,
             Pageable pageable
     ) {
-        return todoService.searchTitle(keyword, pageable);
-    }
-
-
-    @GetMapping("/todos/summary")
-    public Page<TodoSummaryResponseDto> findTodoSummary(Pageable pageable) {
-        return todoService.findTodoSummary(pageable);
+        return todoService.searchTodos(condition, pageable);
     }
 }
