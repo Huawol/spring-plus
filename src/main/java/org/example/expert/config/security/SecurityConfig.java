@@ -7,7 +7,6 @@ import org.example.expert.config.JwtUtil;
 import org.example.expert.domain.user.enums.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -40,12 +39,9 @@ public class SecurityConfig {
 
                 // config로 url에 대한 인증/인가를 관리
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup").permitAll()
-                        .requestMatchers("/auth/signin").permitAll()
-                        .requestMatchers("/todos").hasAnyRole(UserRole.USER.name(), UserRole.ADMIN.name()) // 유저랑 어드민 둘다 허용
-                        .requestMatchers("/todos/**").hasAnyRole(UserRole.USER.name(), UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.PATCH, "/admin/users/").hasRole(UserRole.ADMIN.name())
-                        .anyRequest().denyAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
+                        .anyRequest().authenticated()
                 )
 
                 //필터 등록

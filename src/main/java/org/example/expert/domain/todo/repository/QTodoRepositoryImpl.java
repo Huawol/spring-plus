@@ -41,7 +41,7 @@ public class QTodoRepositoryImpl implements QTodoRepository {
 
     @Override
     public Page<TodoResponse> findByTitle(String keyword, Pageable pageable) {
-        // 1. 엔티티로 조회
+
         List<Todo> content = queryFactory
                 .selectFrom(todo)
                 .where(todo.title.containsIgnoreCase(keyword))

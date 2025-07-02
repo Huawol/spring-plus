@@ -72,8 +72,6 @@ public class JwtFilter implements Filter {
                     authUser, "", List.of(new SimpleGrantedAuthority("ROLE_" + userRole.name())) // 권한까지 부여
             );
 
-
-
             // 거를 contextholder에 대입
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
